@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **`Layout::with_subtitle`** — render a secondary line centred under the title at ~0.7× the title size in a muted grey, for a one-line data summary (e.g. `n = 1,234 cells`). An embedded `\n` splits it across lines; the title block reserves the extra height automatically so the plot is pushed down rather than overlapped. CLI: `--subtitle` on every subcommand. See *Reference → Layout*.
+
 ---
 
 ## [0.1.7] — 2026-04-29

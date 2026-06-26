@@ -1,5 +1,7 @@
 use crate::render::render::{Scene, Primitive, TextAnchor};
-use crate::render::layout::{Layout, ComputedLayout, TickFormat};
+use crate::render::layout::{
+    ComputedLayout, Layout, TickFormat, SUBTITLE_COLOR, SUBTITLE_LINE_HEIGHT, SUBTITLE_SIZE_RATIO,
+};
 use crate::render::render_utils;
 use crate::render::color::Color;
 
@@ -541,11 +543,14 @@ pub fn add_labels_and_title(scene: &mut Scene, computed: &ComputedLayout, layout
     }
 
     // Title
-    if let Some(title) = &layout.title {
-        let lines = render_utils::wrap_or_single(title, computed.title_wrap);
-        let ts = computed.title_size as f64;
+    let cx = computed.width / 2.0;
+    let ts = computed.title_size as f64;
+    let title_lines = layout
+        .title
+        .as_ref()
+        .map(|t| render_utils::wrap_or_single(t, computed.title_wrap));
+    if let Some(ref lines) = title_lines {
         let total_height = lines.len() as f64 * ts;
-        let cx = computed.width / 2.0;
         // Use title_y (derived from base margin before notation tiers) so that
         // BrickPlot notation labels don't push the title into the annotation zone.
         let start_y = computed.title_y - total_height / 2.0 + ts * 0.8;
@@ -559,6 +564,28 @@ pub fn add_labels_and_title(scene: &mut Scene, computed: &ComputedLayout, layout
                 rotate: None,
                 bold: false,
                 color: None,
+            });
+        }
+    }
+
+    // Subtitle: smaller, muted line(s) just below the title block.
+    if let Some(subtitle) = &layout.subtitle {
+        let lines = render_utils::wrap_or_single(subtitle, computed.title_wrap);
+        let sts = (ts * SUBTITLE_SIZE_RATIO).round().max(1.0);
+        let title_block_h = title_lines.as_ref().map(|l| l.len() as f64 * ts).unwrap_or(0.0);
+        // Bottom of the title block, then drop one subtitle line height to the baseline.
+        let title_bottom = computed.title_y + title_block_h / 2.0;
+        let first_baseline = title_bottom + sts * SUBTITLE_LINE_HEIGHT;
+        for (i, line) in lines.iter().enumerate() {
+            scene.add(Primitive::Text {
+                x: cx,
+                y: first_baseline + i as f64 * sts * SUBTITLE_LINE_HEIGHT,
+                content: line.clone(),
+                size: sts as u32,
+                anchor: TextAnchor::Middle,
+                rotate: None,
+                bold: false,
+                color: Some(Color::from(SUBTITLE_COLOR)),
             });
         }
     }

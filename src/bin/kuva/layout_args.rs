@@ -20,6 +20,10 @@ pub struct BaseArgs {
     #[arg(long)]
     pub title: Option<String>,
 
+    /// Subtitle displayed under the title at a smaller, muted size (e.g. a data summary).
+    #[arg(long)]
+    pub subtitle: Option<String>,
+
     /// Canvas width in pixels. Default is auto-computed from plot content.
     #[arg(long)]
     pub width: Option<f64>,
@@ -194,6 +198,9 @@ pub fn apply_base_args(mut layout: Layout, args: &BaseArgs) -> Layout {
     if let Some(h) = args.height { layout = layout.with_height(h); }
     if let Some(ref t) = args.title {
         layout = layout.with_title(t.clone());
+    }
+    if let Some(ref s) = args.subtitle {
+        layout = layout.with_subtitle(s.clone());
     }
     // When rendering to the terminal, auto-select a theme matched to the
     // terminal background unless the user has already chosen one via --theme.

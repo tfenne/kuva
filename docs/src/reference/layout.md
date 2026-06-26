@@ -44,10 +44,15 @@ let layout = Layout::new((0.0, 100.0), (-1.0, 1.0))
 # use kuva::render::plots::Plot;
 # let plots: Vec<Plot> = vec![];
 let layout = Layout::auto_from_plots(&plots)
-    .with_title("My Plot")          // text above the plot area
-    .with_x_label("Concentration")  // label below the x-axis
-    .with_y_label("Response (%)");  // label left of the y-axis
+    .with_title("My Plot")              // text above the plot area
+    .with_subtitle("n = 1,234 cells")   // smaller, muted line under the title
+    .with_x_label("Concentration")      // label below the x-axis
+    .with_y_label("Response (%)");      // label left of the y-axis
 ```
+
+`with_subtitle` draws a second line centred under the title at ~0.7× the title size in a
+muted grey — useful for a one-line data summary. An embedded `\n` splits it across lines,
+and the title block reserves the extra height automatically. CLI: `--subtitle`.
 
 ---
 

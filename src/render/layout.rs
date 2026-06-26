@@ -14,6 +14,13 @@ use crate::render::datetime::DateTimeAxis;
 pub(crate) const DEFAULT_FONT_FAMILY: &str =
     "DejaVu Sans, Liberation Sans, Arial, sans-serif";
 
+/// Subtitle font size as a fraction of the title size.
+pub(crate) const SUBTITLE_SIZE_RATIO: f64 = 0.7;
+/// Subtitle line height (multiple of the subtitle font size), including inter-line gap.
+pub(crate) const SUBTITLE_LINE_HEIGHT: f64 = 1.2;
+/// Muted colour for the subtitle line.
+pub(crate) const SUBTITLE_COLOR: &str = "#666666";
+
 /// Controls how tick labels are formatted on an axis.
 pub enum TickFormat {
     /// Smart default: integers as "5", minimal decimals, scientific notation for extremes.
@@ -135,6 +142,9 @@ pub struct Layout {
     pub x_label: Option<String>,
     pub y_label: Option<String>,
     pub title: Option<String>,
+    /// Optional secondary line rendered centred under the title at a smaller, muted size.
+    /// Use it for a one-line data summary. Embedded `\n` splits it across lines.
+    pub subtitle: Option<String>,
     pub x_categories: Option<Vec<String>>,
     pub y_categories: Option<Vec<String>>,
     pub show_legend: bool,
@@ -297,6 +307,7 @@ impl Layout {
             x_label: None,
             y_label: None,
             title: None,
+            subtitle: None,
             x_categories: None,
             y_categories: None,
             show_legend: false,
@@ -1291,6 +1302,13 @@ impl Layout {
         self
     }
 
+    /// Set a subtitle rendered centred under the title at ~0.7× the title size in a muted
+    /// colour. Handy for a one-line data summary; embedded `\n` splits it across lines.
+    pub fn with_subtitle<S: Into<String>>(mut self, subtitle: S) -> Self {
+        self.subtitle = Some(subtitle.into());
+        self
+    }
+
     pub fn with_x_label<S: Into<String>>(mut self, label: S) -> Self {
         self.x_label = Some(label.into());
         self
@@ -1941,8 +1959,17 @@ impl ComputedLayout {
         } else {
             10.0 * s
         };
+        // Subtitle: a smaller, muted line below the title. Reserve its height on top of
+        // the title block (without moving the title) so the plot starts below it. Must
+        // match the rendering in `add_labels_and_title`.
+        let subtitle_size = title_size * SUBTITLE_SIZE_RATIO;
+        let subtitle_lines = match &layout.subtitle {
+            Some(s) => render_utils::wrap_or_single(s, layout.title_wrap).len(),
+            None => 0,
+        };
+        let subtitle_h = subtitle_lines as f64 * subtitle_size * SUBTITLE_LINE_HEIGHT;
         let mut title_y = base_margin_top / 2.0;
-        let mut margin_top = base_margin_top;
+        let mut margin_top = base_margin_top + subtitle_h;
         // BrickPlot per-block notation labels are drawn above the top row.
         if layout.brick_notation_tiers > 0 {
             let body = layout.body_size as f64 * s;
