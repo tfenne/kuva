@@ -5961,6 +5961,7 @@ fn add_colorbar_at(
             .collect();
         auto_ticks.as_slice()
     };
+
     // Minimum vertical spacing between adjacent tick labels. Count/log colorbars
     // append a tick at the exact data maximum on top of the nearest power-of-ten
     // tick; in log space the two can sit a fraction of a decade apart so their
